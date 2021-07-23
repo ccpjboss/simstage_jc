@@ -36,7 +36,7 @@ private:
                 rotate_time = ros::Duration(rand()%2,nsec*exp10(8));
                 ROS_INFO("Rotation time: %d.%d",rotate_time.sec,rotate_time.nsec);
                 this->robot_stopped = true;
-                this->rotation_orientation = rand()%2 +1;
+                this->rotation_orientation = rand()%3 +1;
             }
 
             if(ros::Time::now()- this->rotate_start > rotate_time)

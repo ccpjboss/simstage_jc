@@ -19,6 +19,7 @@ private:
 
     ros::Time rotate_start;
     ros::Duration rotate_time;
+    int rotation_orientation;
 
     geometry_msgs::Twist calculateCommand()
     {
@@ -31,17 +32,22 @@ private:
             if (this->robot_stopped == false)
             {
                 this->rotate_start = ros::Time::now();
-                int32_t nsec = rand()%5;
+                int32_t nsec = rand()%9;
                 rotate_time = ros::Duration(rand()%2,nsec*exp10(8));
                 ROS_INFO("Rotation time: %d.%d",rotate_time.sec,rotate_time.nsec);
                 this->robot_stopped = true;
+                this->rotation_orientation = rand()%2 +1;
             }
 
             if(ros::Time::now()- this->rotate_start > rotate_time)
             {
                 this->robot_stopped=false;
             }
-            msg.angular.z=2;
+
+            if(this->rotation_orientation%2==0)
+                msg.angular.z=2;
+            else
+                msg.angular.z=-2;
         }
         
         return msg;

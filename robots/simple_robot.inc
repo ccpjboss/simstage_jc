@@ -16,6 +16,18 @@ define laser ranger(
 	)
 )
 
+define cam camera(
+	# laser properties
+  	resolution [ 1280 720 ]
+  	range [ 0.5 8.0 ]
+  	fov [ 100.0 70.0 ]
+ 	pantilt [ 0.0 0.0 ]
+
+  	# model properties
+	size [ 0.06 0.06 0.06]
+  	color "black"
+)
+
 define simple_robot position(
 	odom_error [0.03 0.03 0.00 0.05]
 	localization "odom"
@@ -25,5 +37,6 @@ define simple_robot position(
 	color "red"
 
 	laser( pose [0.23 0.0 -0.15 0.0] )
+	cam( pose [0.17 0.0 0.0 0.0] )
 )
 

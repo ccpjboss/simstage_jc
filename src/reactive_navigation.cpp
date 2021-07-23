@@ -57,7 +57,6 @@ private:
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     {
         obstacle_distance = *std::min_element(msg->ranges.begin(), msg->ranges.end());
-        //ROS_INFO("Min distance to obstacle: %f", obstacle_distance);
     }
 
 public:

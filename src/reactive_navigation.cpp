@@ -13,7 +13,7 @@ private:
     ros::NodeHandle n;
     ros::Publisher cmd_vel_pub;
     ros::Subscriber laser_sub;
-
+    
     double obstacle_distance;
     bool robot_stopped=false;
 

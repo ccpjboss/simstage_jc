@@ -15,35 +15,41 @@ private:
     ros::Subscriber laser_sub;
     
     double obstacle_distance;
-    bool robot_stopped=false;
+    bool robot_stopped=false; 
 
-    ros::Time rotate_start;
-    ros::Duration rotate_time;
+    ros::Time rotate_start;     //Time when the rotation starts
+    ros::Duration rotate_time;  //Rotation duration
     int rotation_orientation;
 
     geometry_msgs::Twist calculateCommand()
     {
         auto msg = geometry_msgs::Twist();
         
+        //If the robot is not near an obstacle and it is not stopped
         if(obstacle_distance > 0.5 && this->robot_stopped == false){
             msg.linear.x = 1.0;
-        }else{
-
-            if (this->robot_stopped == false)
+        }else{ //If the robot is near an obstacle
+            if (this->robot_stopped == false) //If the robot was moving
             {
+                //The robot will now stop
+                this->robot_stopped = true;
+
+                //Gets the time variables for the rotation
                 this->rotate_start = ros::Time::now();
                 int32_t nsec = rand()%9;
                 rotate_time = ros::Duration(rand()%2,nsec*exp10(8));
+
                 ROS_INFO("Rotation time: %d.%d",rotate_time.sec,rotate_time.nsec);
-                this->robot_stopped = true;
+
+                //Gets the rotation orientation
                 this->rotation_orientation = rand()%3 +1;
             }
 
+            //Checks if the robot has rotated for enough time
             if(ros::Time::now()- this->rotate_start > rotate_time)
-            {
                 this->robot_stopped=false;
-            }
 
+            //Rotation orientation
             if(this->rotation_orientation%2==0)
                 msg.angular.z=2;
             else

@@ -13,18 +13,41 @@ private:
     ros::NodeHandle n;
     ros::Publisher cmd_vel_pub;
     ros::Subscriber laser_sub;
-
+    
     double obstacle_distance;
-    bool robot_stopped;
+    bool robot_stopped=false;
+
+    ros::Time rotate_start;
+    ros::Duration rotate_time;
+    int rotation_orientation;
 
     geometry_msgs::Twist calculateCommand()
     {
         auto msg = geometry_msgs::Twist();
         
-        if(obstacle_distance > 0.5){
+        if(obstacle_distance > 0.5 && this->robot_stopped == false){
             msg.linear.x = 1.0;
         }else{
-            // TODO  
+
+            if (this->robot_stopped == false)
+            {
+                this->rotate_start = ros::Time::now();
+                int32_t nsec = rand()%9;
+                rotate_time = ros::Duration(rand()%2,nsec*exp10(8));
+                ROS_INFO("Rotation time: %d.%d",rotate_time.sec,rotate_time.nsec);
+                this->robot_stopped = true;
+                this->rotation_orientation = rand()%3 +1;
+            }
+
+            if(ros::Time::now()- this->rotate_start > rotate_time)
+            {
+                this->robot_stopped=false;
+            }
+
+            if(this->rotation_orientation%2==0)
+                msg.angular.z=2;
+            else
+                msg.angular.z=-2;
         }
         
         return msg;
@@ -34,9 +57,7 @@ private:
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     {
         obstacle_distance = *std::min_element(msg->ranges.begin(), msg->ranges.end());
-        ROS_INFO("Min distance to obstacle: %f", obstacle_distance);
     }
-
 
 public:
     ReactiveController(){
@@ -75,6 +96,7 @@ public:
 int main(int argc, char **argv){
     // Initialize ROS
     ros::init(argc, argv, "reactive_controller");
+    srand(time(0));
 
     // Create our controller object and run it
     auto controller = ReactiveController();

@@ -19,8 +19,8 @@ window(
 floorplan(
 	size [27.050 21.650 1.000]
 	pose [13.525 10.825 0.000 0.000]
-	bitmap "../maps/1r5.pgm"
+	bitmap "../maps/maze.pgm"
 ) 
 
-include "../robots/simple_robot.inc"
-simple_robot (pose [ 5.000 5.2 0.000 90.000 ] name "robot")
+include "../robots/wall_following_robot.inc"
+wall_following_robot( pose [ 2.000 1.0 0.000 0.000 ] name "robot" )

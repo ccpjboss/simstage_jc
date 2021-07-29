@@ -1,3 +1,4 @@
+
 #include <iostream>
 
 #include <cstdlib>
@@ -5,6 +6,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/LaserScan.h"
 #include "geometry_msgs/Twist.h"
+
 
 class ReactiveController
 {
@@ -96,6 +98,7 @@ public:
     }
 
 };
+
 
 int main(int argc, char **argv){
     // Initialize ROS

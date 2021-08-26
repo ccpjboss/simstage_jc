@@ -1,5 +1,10 @@
-
 <launch>
     <node pkg="stage_ros" type="stageros" name="stageros" args="$(find simstage_jc)/worlds/rooms.world"/>
-    <node pkg="simstage_jc" type="reactive_nav" name="reactive_navigation" output="screen"/>
+    <node pkg="simstage_jc" type="wall_controller" name="wall_follower" output="screen">
+        <remap from="sonar_frente" to="base_scan_0"/>
+        <remap from="sonar_esquerda" to="base_scan_1"/>
+        <remap from="sonar_direita" to="base_scan_2"/>
+        <remap from="sonar_fdireita" to="base_scan_3"/>
+        <remap from="sonar_fesquerda" to="base_scan_4"/>
+    </node>
 </launch>

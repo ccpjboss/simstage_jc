@@ -7,79 +7,130 @@
 #include "sensor_msgs/LaserScan.h"
 #include "geometry_msgs/Twist.h"
 
-
 class ReactiveController
 {
 private:
     ros::NodeHandle n;
     ros::Publisher cmd_vel_pub;
-    ros::Subscriber laser_sub;
-    
-    double obstacle_distance;
-    bool robot_stopped=false; 
 
-    ros::Time rotate_start;     //Time when the rotation starts
-    ros::Duration rotate_time;  //Rotation duration
+    ros::Subscriber sonar_f;
+    ros::Subscriber sonar_e;
+    ros::Subscriber sonar_d;
+    ros::Subscriber sonar_fe;
+    ros::Subscriber sonar_fd;
+
+    double dist_f;
+    double dist_e;
+    double dist_d;
+    double dist_fe;
+    double dist_fd;
+
+    bool robot_stopped = false;
+
+    ros::Time rotate_start;    //Time when the rotation starts
+    ros::Duration rotate_time; //Rotation duration
     int rotation_orientation;
 
     geometry_msgs::Twist calculateCommand()
     {
         auto msg = geometry_msgs::Twist();
-        
-        //If the robot is not near an obstacle and it is not stopped
-        if(obstacle_distance > 0.5 && this->robot_stopped == false){
-            msg.linear.x = 1.0;
-        }else{ //If the robot is near an obstacle
-            if (this->robot_stopped == false) //If the robot was moving
-            {
-                //The robot will now stop
-                this->robot_stopped = true;
+        double dist_wall = 2.5;
 
-                //Gets the time variables for the rotation
-                this->rotate_start = ros::Time::now();
-                int32_t nsec = rand()%9;
-                rotate_time = ros::Duration(rand()%2,nsec*exp10(8));
-
-                ROS_INFO("Rotation time: %d.%d",rotate_time.sec,rotate_time.nsec);
-
-                //Gets the rotation orientation
-                this->rotation_orientation = rand()%3 +1;
-            }
-
-            //Checks if the robot has rotated for enough time
-            if(ros::Time::now()- this->rotate_start > rotate_time)
-                this->robot_stopped=false;
-
-            //Rotation orientation
-            if(this->rotation_orientation%2==0)
-                msg.angular.z=2;
-            else
-                msg.angular.z=-2;
+        if (dist_f > dist_wall  && dist_fe > dist_wall  && dist_fd > dist_wall )
+        {
+            msg.linear.x = 0.5;
+            msg.angular.z = -0.3;
+            ROS_INFO("Finding wall");
         }
-        
+        else if (dist_f < dist_wall && dist_fe > dist_wall && dist_fd > dist_wall )
+        {
+            msg.angular.z = 0.7;
+            ROS_INFO("Turning left");
+        }
+        else if (dist_f < dist_wall && dist_fe > dist_wall && dist_fd < dist_wall )
+        {
+            msg.angular.z = 0.7;
+            ROS_INFO("Turning left");
+        }
+        else if (dist_f < dist_wall && dist_fe < dist_wall && dist_fd > dist_wall )
+        {
+            msg.angular.z = 0.7;
+            ROS_INFO("Turning left");
+        }
+        else if (dist_f < dist_wall && dist_fe < dist_wall && dist_fd < dist_wall )
+        {
+            msg.angular.z = 0.7;
+            ROS_INFO("Turning left");
+        }
+        else if (dist_f > dist_wall && dist_fe > dist_wall && dist_fd < dist_wall && dist_d<dist_wall )
+        {
+            msg.linear.x = 0.5;
+            ROS_INFO("Follow wall");
+        }
+        else if (dist_f > dist_wall && dist_fe < dist_wall && dist_fd > dist_wall )
+        {
+            msg.linear.x = 0.5;
+            msg.angular.z = -0.3;
+            ROS_INFO("Finding wall");
+        }
+        else if (dist_f > dist_wall && dist_fe < dist_wall && dist_fd < dist_wall )
+        {
+            msg.linear.x = 0.5;
+            msg.angular.z = -0.3;
+            ROS_INFO("Finding wall");
+        }
+        else
+        {
+            ROS_INFO("No state!");
+        }
+
         return msg;
     }
 
-
-    void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
+    void sonarFrente(const sensor_msgs::LaserScan::ConstPtr &msg)
     {
-        obstacle_distance = *std::min_element(msg->ranges.begin(), msg->ranges.end());
+        dist_f = *std::min_element(msg->ranges.begin(), msg->ranges.end());
+    }
+
+    void sonarEsq(const sensor_msgs::LaserScan::ConstPtr &msg)
+    {
+        dist_e = *std::min_element(msg->ranges.begin(), msg->ranges.end());
+    }
+
+    void sonarDir(const sensor_msgs::LaserScan::ConstPtr &msg)
+    {
+        dist_d = *std::min_element(msg->ranges.begin(), msg->ranges.end());
+    }
+
+    void sonarFEsq(const sensor_msgs::LaserScan::ConstPtr &msg)
+    {
+        dist_fe = *std::min_element(msg->ranges.begin(), msg->ranges.end());
+    }
+
+    void sonarFDir(const sensor_msgs::LaserScan::ConstPtr &msg)
+    {
+        dist_fd = *std::min_element(msg->ranges.begin(), msg->ranges.end());
     }
 
 public:
-    ReactiveController(){
+    ReactiveController()
+    {
         // Initialize ROS
         this->n = ros::NodeHandle();
 
         // Create a publisher object, able to push messages
         this->cmd_vel_pub = this->n.advertise<geometry_msgs::Twist>("cmd_vel", 5);
 
-        // Create a subscriber for laser scans 
-        this->laser_sub = n.subscribe("base_scan", 10, &ReactiveController::laserCallback, this);
-
+        // Create a subscriber for laser scans
+        this->sonar_f = n.subscribe("sonar_frente", 10, &ReactiveController::sonarFrente, this);
+        this->sonar_e = n.subscribe("sonar_esquerda",10, &ReactiveController::sonarEsq, this);
+        this->sonar_d = n.subscribe("sonar_direita", 10, &ReactiveController::sonarDir, this);
+        this->sonar_fe = n.subscribe("sonar_fesquerda",10, &ReactiveController::sonarFEsq, this);
+        this->sonar_fd = n.subscribe("sonar_fdireita",10, &ReactiveController::sonarFDir, this);
     }
 
-    void run(){
+    void run()
+    {
         // Send messages in a loop
         ros::Rate loop_rate(10);
         while (ros::ok())
@@ -96,13 +147,12 @@ public:
             loop_rate.sleep();
         }
     }
-
 };
 
-
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
     // Initialize ROS
-    ros::init(argc, argv, "reactive_controller");
+    ros::init(argc, argv, "wall_controller");
     srand(time(0));
 
     // Create our controller object and run it

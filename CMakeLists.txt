@@ -140,7 +140,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/simstage_JC_node.cpp)
 add_executable(reactive_nav src/reactive_navigation.cpp)
-add_executable(wall_follower src/wall_follow.cpp)
+add_executable(wall_controller src/wall_follow.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -157,7 +157,7 @@ add_executable(wall_follower src/wall_follow.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(reactive_nav ${catkin_LIBRARIES})
-target_link_libraries(wall_follower ${catkin_LIBRARIES})
+target_link_libraries(wall_controller ${catkin_LIBRARIES})
 
 #############
 ## Install ##
